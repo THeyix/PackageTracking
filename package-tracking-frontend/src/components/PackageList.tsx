@@ -15,8 +15,6 @@ const PackageList: React.FC<PackageListProps> = ({ onCreatePackage }) => {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [trackingNumberFilter, setTrackingNumberFilter] = useState('');
 
-  // The loadPackages function is wrapped in useCallback.
-  // It will only be re-created if its dependency, 'statusFilter', changes.
   const loadPackages = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -31,19 +29,18 @@ const PackageList: React.FC<PackageListProps> = ({ onCreatePackage }) => {
     }
   }, [statusFilter]);
 
-  // This useEffect hook now safely depends on the memoized 'loadPackages' function.
   useEffect(() => {
     loadPackages();
   }, [loadPackages]);
 
   const handleStatusUpdate = async (packageId: number, newStatus: PackageStatus) => {
     const statusName = getStatusDisplayName(newStatus);
-    // Adds a confirmation dialog before changing the status.
+
     if (window.confirm(`Are you sure you want to change the status to "${statusName}"?`)) {
       try {
         await packageService.updatePackageStatus(packageId, { newStatus });
         alert('Status updated successfully!');
-        loadPackages(); // Reload the list after a successful update.
+        loadPackages();
       } catch (err) {
         alert('Failed to update status. The transition may not be allowed.');
       }
@@ -106,7 +103,7 @@ const PackageList: React.FC<PackageListProps> = ({ onCreatePackage }) => {
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Filter by All Statuses</option>
             {Object.entries(PackageStatus)
-                .filter(([key]) => isNaN(Number(key))) // Filter out numeric enum keys
+                .filter(([key]) => isNaN(Number(key)))
                 .map(([key, value]) => (
                     <option key={value} value={value}>{key}</option>
             ))}
