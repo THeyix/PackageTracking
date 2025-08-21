@@ -12,8 +12,6 @@ const PackageDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // The loadDetails function is wrapped in useCallback.
-  // It will only be re-created if its dependency, 'id', changes.
   const loadDetails = useCallback(async () => {
     if (!id) {
       setError("Package ID is missing from the URL.");
@@ -23,7 +21,6 @@ const PackageDetails: React.FC = () => {
     setLoading(true);
     try {
       const packageId = parseInt(id);
-      // Fetch package data and valid transitions concurrently for efficiency.
       const [packageData, transitionsData] = await Promise.all([
         packageService.getPackageById(packageId),
         packageService.getValidStatusTransitions(packageId)
@@ -37,7 +34,6 @@ const PackageDetails: React.FC = () => {
     }
   }, [id]);
 
-  // This useEffect hook now safely depends on the memoized 'loadDetails' function.
   useEffect(() => {
     loadDetails();
   }, [loadDetails]);
@@ -45,12 +41,11 @@ const PackageDetails: React.FC = () => {
   const handleStatusUpdate = async (newStatus: PackageStatus) => {
     if (!pkg) return;
     const statusName = getStatusDisplayName(newStatus);
-    // Adds a confirmation dialog before changing the status.
     if (window.confirm(`Are you sure you want to change status to "${statusName}"?`)) {
       try {
         await packageService.updatePackageStatus(pkg.id, { newStatus });
         alert("Status updated successfully!");
-        loadDetails(); // Reload details to show the updated status and history.
+        loadDetails();
       } catch (err) {
         alert("Failed to update status. Please try again.");
       }
@@ -84,7 +79,6 @@ const PackageDetails: React.FC = () => {
                 <button 
                   key={status} 
                   onClick={() => handleStatusUpdate(status)}
-                  // Dynamically create button colors based on status
                   className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow hover:opacity-90 transition-opacity ${getStatusColor(status).replace('bg-', 'bg-').replace('-100', '-500')}`}
                 >
                   Mark as {getStatusDisplayName(status)}
